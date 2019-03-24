@@ -1,13 +1,6 @@
 #!/bin/bash
 
-COMPILER=nodejs
-COMPILER_OUTPUT=false
-COMPILER_OPTIONS=
-PRIMARY_EXTENSION=js
-MAX_DIR_LEVEL=3
-VERBOSE=false;
-VVERBOSE=false;
-FORCE=false;
+source config.sh
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -117,7 +110,7 @@ do
         if ! $signed || ! [[ -f $sourceOutput ]] || $FORCE; then
             if $VVERBOSE; then echo "compiling" $sourcePath; fi
 
-            if $COMPILE_OUTPUT; then
+            if $EXECUTABLE_MODE; then
                 $COMPILER $COMPILER_OPTIONS $sourcePath -o practice # compilation part
                 if [[ -f $sourceInput ]]; then
                     cat $sourceInput | ./practice >> $sourceMD

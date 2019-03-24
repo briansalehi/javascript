@@ -1,11 +1,6 @@
 #!/bin/bash
 
-PRIMARY_EXTENSION=js
-ADDITIONAL_EXTENSIONS="md comment.txt input.txt output.txt md5sum.txt title.txt"
-MAX_DIR_LEVEL=3
-VERBOSE=false;
-VVERBOSE=false;
-FORCE=false;
+source config.sh
 
 while [[ $# -gt 0 ]]; do
     case $1 in
