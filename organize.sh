@@ -13,10 +13,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 create_list() {
-    if $VERBOSE; then echo "creating list file"; fi
+    if $VERBOSE; then echo "creating list.md file"; fi
 	find . -name "*\.$PRIMARY_EXTENSION" -o -name "00\.README\.md" | sort > list.txt
 
-    if $VERBOSE; then echo "creating List file"; fi
+    if $VERBOSE; then echo "creating List.md file"; fi
     echo -e "# Verbose Table of Content\n" > List.md
     for filename in $(cat list.txt); do
         rawname=$(echo $filename | sed 's/\.[a-z]*$//');
@@ -78,7 +78,7 @@ organize_extensions() {
 }
 
 organize_directory() {
-    if $VERBOSE; then echo "organizing $directory"; fi
+    if $VERBOSE; then echo "organizing $directory/"; fi
     index=0
     for file in $(cat "$directory/.list"); do
         index=$(expr $index + 1)
@@ -105,7 +105,7 @@ total=0
 for level in $(seq $MAX_DIR_LEVEL -1 1); do
     for list in $(find . -mindepth $level -maxdepth $level -name ".list"); do
         directory=$(echo $list | sed 's/\/\.list$//')
-        if $VVERBOSE; then echo "checking if $directory is organized"; fi
+        if $VVERBOSE; then echo "checking if $directory/ is organized"; fi
         is_directory_organized
         if ! $ORGANIZED; then organize_directory; fi
     done
