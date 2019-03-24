@@ -1,0 +1,2 @@
+this is the easiest sample of JavaScript in the world!  
+open your browser, press F12 key and write this sample in console and see the results!
