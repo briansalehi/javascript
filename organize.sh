@@ -69,7 +69,7 @@ is_directory_organized() {
 organize_extensions() {
     for extension in $ADDITIONAL_EXTENSIONS; do
         rawname=$(echo $filename | sed 's/\..*$//')
-        rootextension=$(ls -d $directory/*$rawname.$extension 2>/dev/null)
+        rootextension=$(ls -d $directory/{,???}$rawname.$extension 2>/dev/null)
         if [[ -f $rootextension ]]; then
             if $VVERBOSE; then echo "$extension extension found for $filename"; fi
             mv $rootextension $directory/$index.$rawname.$extension 2>/dev/null
@@ -85,7 +85,7 @@ organize_directory() {
         index=$(printf "%02d" $index)
         filename=$(echo $file | sed 's/.*\/[0-9]*\.//')
         filenumber=$(echo $file | sed 's/.*\/\..*//')
-        rootname=$(ls -d $directory/*$file 2>/dev/null)
+        rootname=$(ls -d $directory/{,???}$file 2>/dev/null)
         if [[ -d $rootname ]]; then
             if $VVERBOSE; then echo "moving $rootname to $directory/$index.$filename"; fi
             mv $rootname $directory/$index.$filename 2>/dev/null
@@ -96,6 +96,7 @@ organize_directory() {
             organize_extensions
         else
             echo "WARNING! file does not exist: $directory/$file"
+            if $VERBOSE; then echo "$LINENO: was looking for $rootname"; fi
         fi
     done
     total=$(expr $total + 1)
