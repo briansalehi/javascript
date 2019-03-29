@@ -25,6 +25,9 @@ ADDITIONAL_EXTENSIONS="md comment.txt input.txt output.txt md5sum.txt title.txt"
 # maximum directory level, almost always 3 levels are meaningful
 MAX_DIR_LEVEL=3
 
+# whether comments be available
+COMMENTS=true
+
 # if -v is set, show verbose logs
 VERBOSE=false;
 

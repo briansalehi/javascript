@@ -87,6 +87,7 @@ do
     fi
 done
 
+if [[ -n $COMPILER ]]; then
 if $VERBOSE; then echo "compiling files and generating results..."; fi
 for pair in $(cat files.list)
 do
@@ -151,7 +152,9 @@ do
         echo -e "\`\`\`" >> $sourceMD # end of the markdown syntax
     fi
 done
+fi
 
+if $COMMENTS; then
 if $VERBOSE; then echo "appending comments..."; fi
 for pair in $(cat files.list)
 do
@@ -170,8 +173,8 @@ do
         echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
         echo "no comments" >> $markdownSrc
     fi
-
 done
+fi
 
 # all md files should be linked by pagination for ease of moving through pages
 if $VERBOSE; then echo "listing markdown files"; fi
