@@ -6,6 +6,12 @@ COMPILER=nodejs
 # compiler options (optional)
 COMPILER_OPTIONS=
 
+# pkg-config --cflags "<space separated array>"
+PKG_CFLAGS=
+
+# pkg-config --libs "<space separated array>"
+PKG_LIBS=
+
 # whether above compiler or interpreter generates an executable file (true)
 # or outputs the result to stdout stream (false)
 EXECUTABLE_MODE=false

@@ -111,7 +111,16 @@ do
             if $VVERBOSE; then echo "compiling" $sourcePath; fi
 
             if $EXECUTABLE_MODE; then
-                $COMPILER $COMPILER_OPTIONS $sourcePath -o practice # compilation part
+                if [[ -n $PKG_CFLAGS ]] && [[ -n $PKG_LIBS ]]; then
+                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $COMPILER_OPTIONS $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
+                elif [[ -n $PKG_LIBS ]]; then
+                    $COMPILER $COMPILER_OPTIONS $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
+                elif [[ -n $PKG_CFLAGS ]]; then
+                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $COMPILER_OPTIONS $sourcePath -o practice
+                else
+                    $COMPILER $COMPILER_OPTIONS $sourcePath -o practice
+                fi
+
                 if [[ -f $sourceInput ]]; then
                     cat $sourceInput | ./practice >> $sourceMD
                     cat $sourceInput | ./practice > $sourceOutput
