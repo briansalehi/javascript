@@ -105,8 +105,15 @@ do
     if [[ $? -eq 0 ]]; then signed=true; else signed=false; fi
 
     if [[ -f $sourcePath ]]; then
-        echo -e "\n## Results\n" >> $sourceMD # append result header to md file
-        echo -e "\`\`\`txt" >> $sourceMD # markdown syntax highlighting
+        if [[ -f $sourceInput ]]; then
+            echo -e "\n## Input\n" >> $sourceMD
+            echo -e "\`\`\`txt" >> $sourceMD
+            cat $sourceInput >> $sourceMD
+            echo -e "\n\`\`\`" >> $sourceMD
+        fi
+
+        echo -e "\n## Output\n" >> $sourceMD
+        echo -e "\`\`\`txt" >> $sourceMD
 
         if ! $signed || ! [[ -f $sourceOutput ]] || $FORCE; then
             if $VVERBOSE; then echo "compiling" $sourcePath; fi
