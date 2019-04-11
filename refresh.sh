@@ -283,3 +283,6 @@ rm -f readme.list
 rm -f sections.list
 if $VERBOSE; then echo "junk files removed"; fi
 echo "repository refreshed"
+
+echo "creating HTML page"
+./markdown2html.sh
