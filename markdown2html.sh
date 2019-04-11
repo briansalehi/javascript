@@ -1,7 +1,7 @@
 #!/bin/bash
 
 output=markdown.html
-criteria=$(find . -name "[0-9][!0].*.md")
+criteria=$(find . -name "[0-9][!0].*.md" | sort)
 
 rm -f $output
 
@@ -48,3 +48,6 @@ sed -ri 's/__(.*)__/<b>\1<\/b>/' $output
 # italic
 sed -ri 's/\*(.*)\*/<i>\1<\/i>/' $output
 sed -ri 's/_(.*)_/<i>\1<\/i>/' $output
+
+# convert _
+sed -i -e 's/_/\&lowbar;/' $output
