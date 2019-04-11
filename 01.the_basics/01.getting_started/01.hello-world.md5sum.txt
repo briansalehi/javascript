@@ -1,0 +1,1 @@
+f258b4b0691f15102651ef263fc2ccc9  ./01.the_basics/01.getting_started/01.hello-world.js
