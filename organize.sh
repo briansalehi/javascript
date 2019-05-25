@@ -23,7 +23,7 @@ create_list() {
         filenumber=$(echo $filename | sed -e 's/.*\///' -e 's/\..*//' -e 's/\..*//')
         title=$(cat $rawname.title.txt 2>/dev/null);
         level=$(echo $filename | grep -o "/" | wc -l);
-		filenumber=$(echo $rawname | grep -oe "[0-9][0-9]" | xargs | sed 's/ 00$//' | cut -d" " -f 1-$(expr $level + 1) | tr " " ".")
+		filenumber=$(echo $rawname | grep -oe "[0-9][0-9]\." | sed 's/\.//' | xargs | sed 's/ 00$//' | cut -d" " -f 1-$(expr $level + 1) | tr " " ".")
 
         if [[ $title == "" ]]; then title="no title"; fi
 
@@ -32,6 +32,8 @@ create_list() {
         else
             level=$(expr $level - 2);
         fi
+
+        if [ $level -gt 1 ]; then break; fi
 
         link="";
         for index in $(seq 0 $level); do
@@ -54,10 +56,10 @@ is_directory_organized() {
         index=$(expr $index + 1)
         index=$(printf "%02d" $index)
         if [[ -d "$directory/$file" ]] || [[ -f "$directory/$file" ]]; then
-            if $VERBOSE; then echo "$directory/$file contains new file, needs indexing"; fi
+            if $VERBOSE; then echo "$directory contains new file(s): $file, needs indexing..."; fi
             ORGANIZED=false; break
         elif ! [[ -d "$directory/$index.$file" ]] && ! [[ -f "$directory/$index.$file" ]]; then
-            if $VERBOSE; then echo "$directory/$file has broken indexing, needs update"; fi
+            if $VERBOSE; then echo "$directory has broken indexing because of $file, needs update..."; fi
             ORGANIZED=false; break
         else
             if $VVERBOSE; then echo "$directory/$file is updated"; fi

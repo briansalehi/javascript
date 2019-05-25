@@ -18,7 +18,7 @@ Practices are written by inspiration of the following JavaScript references:
 
 ## Representation
 
-Practice pages are generated automatically in **markdown** syntax by *refresh.sh* bash script file.  
+Practice pages are generated automatically in **markdown** syntax by *update.sh* bash script file.  
 
 ## Contribute
 
@@ -26,7 +26,7 @@ Feel free to add or update any of the practice files.
 You should consider a few things before adding or updating any practice:
 
 * to add a practice, put the file's name in the **.list** file, in order!
-* *refresh.sh* script will set file numbers automatically, based on orders in *.list* file, so don't bother numbering!
+* *update.sh* script will set file numbers automatically, based on orders in *.list* file, so don't bother numbering!
 * practice files should be named properly, say *"console.js"*, related to their topics
 * each practice should clearly explain only 1 topic
 * each practice should be as minimal as possible

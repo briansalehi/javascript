@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# whether compilation or interpretation should be done
+EXECUTABLE=true
+
 # compiler or interpreter used for building practices
 COMPILER=nodejs
 

@@ -25,9 +25,13 @@ create_relative_list() {
 
     for filename in $(cat relative_list.txt); do
         rawname=$(echo $filename | sed 's/\.[a-z]*$//');
-        title=$(cat $rawname.title.txt 2>/dev/null);
         level=$(echo $filename | grep -o "/" | wc -l);
         level=$(expr $level - 1);
+        if [ $level -gt 2 ]; then break; fi
+
+        if ! [ -f $rawname.title.txt ]; then echo "Warning: title file not found for $filename"; fi
+        title=$(cat $rawname.title.txt 2>/dev/null);
+
         filenumber=$(echo $rawname | grep -oe "[0-9][0-9]" | xargs | sed 's/ 00$//' | cut -d" " -f 1-$(expr $level + 1) | tr " " ".")
 
         if [[ $(echo $filename | grep -o "README") == "README" ]]; then
@@ -78,7 +82,7 @@ do
     fi
 
     if [[ -f $sourcePath ]]; then
-        echo -e "# $sourceHeader\n" > $sourceMD # header of the file
+        echo -e "# $numbering $sourceHeader\n" > $sourceMD # header of the file
         echo -e "\`\`\`$PRIMARY_EXTENSION" >> $sourceMD # markdown syntax highlighting
         cat $sourcePath >> $sourceMD # append source code text to md file
         echo -e "\n\`\`\`" >> $sourceMD # end of the markdown syntax
@@ -87,6 +91,7 @@ do
     fi
 done
 
+if $EXECUTABLE; then
 if [[ -n $COMPILER ]]; then
 if $VERBOSE; then echo "compiling files and generating results..."; fi
 for pair in $(cat files.list)
@@ -98,8 +103,14 @@ do
         sourcePath=$(echo $sourceMD | sed "s/\.md$/\.$PRIMARY_EXTENSION/")
     fi
     sourceInput=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.input\.txt/" | tr "~" " ") # input text
+    sourceFlags=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.flags\.txt/" | tr "~" " ") # input text
     sourceOutput=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.output\.txt/" | tr "~" " ") # input text
     sourceSign=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.md5sum.txt/" | tr "~" " ") # input text
+    if [ -f $sourceFlags ]; then
+        sourceFlags=$(cat $sourceFlags)
+    else
+        sourceFlags=""
+    fi
 
     md5sum --quiet --ignore-missing --check $sourceSign &>/dev/null
     if [[ $? -eq 0 ]]; then signed=true; else signed=false; fi
@@ -120,16 +131,18 @@ do
 
             if $EXECUTABLE_MODE; then
                 if [[ -n $PKG_CFLAGS ]] && [[ -n $PKG_LIBS ]]; then
-                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $COMPILER_OPTIONS $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
+                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $sourceFlags $COMPILER_OPTIONS $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
                 elif [[ -n $PKG_LIBS ]]; then
-                    $COMPILER $COMPILER_OPTIONS $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
+                    $COMPILER $COMPILER_OPTIONS $sourceFlags $sourcePath -o practice $(pkg-config --libs $PKG_LIBS)
                 elif [[ -n $PKG_CFLAGS ]]; then
-                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $COMPILER_OPTIONS $sourcePath -o practice
+                    $COMPILER $(pkg-config --cflags $PKG_CFLAGS) $COMPILER_OPTIONS $sourceFlags $sourcePath -o practice
                 else
-                    $COMPILER $COMPILER_OPTIONS $sourcePath -o practice
+                    $COMPILER $COMPILER_OPTIONS $sourceFlags $sourcePath -o practice
                 fi
 
-                if [[ -f $sourceInput ]]; then
+                if ! [ -f practice ]; then
+                    echo "no output" >> $sourceMD
+                elif [[ -f $sourceInput ]]; then
                     cat $sourceInput | ./practice >> $sourceMD
                     cat $sourceInput | ./practice > $sourceOutput
                 else
@@ -158,7 +171,12 @@ do
     else
         echo -e "\`\`\`" >> $sourceMD # end of the markdown syntax
     fi
+
+    if [ -f practice ]; then
+        rm practice
+    fi
 done
+fi
 fi
 
 if $COMMENTS; then
@@ -227,7 +245,7 @@ do
 done
 
 # count directory levels
-grep "README.md" List.md | awk -F '/' '{print NR, NF-1}' > count.list
+grep "README.md" List.md | sed -r 's/.*\((.*)\).*/\1/' | awk -F '/' '{print NR, NF-1}' > count.list
 # number lines
 grep "README.md" List.md | nl > addr.list
 # join two previous files
@@ -237,16 +255,22 @@ rm -f count.list addr.list
 # separate data (number of occurances, title, address)
 cat readme.list | sed -r 's/([0-9]).*\[(.*)\]\((.*)\).*/\1|\2|\3/' | tr " " "~" > sections.list
 
-if $VERBOSE; then echo "creating chapter shortcuts"; fi
+if $VERBOSE; then echo "creating next chapter shortcuts"; fi
 for pair in $(cat sections.list | sed -n '/^3.*/p')
 do
     current=$(echo $pair | cut -d"|" -f3 | sed 's/\.\///') # current file in iteration
     occurance=$(echo $pair | cut -d"|" -f1) # distance of current file from repository root directory
-    nextCname=$(cat sections.list | sed -n '/^3.*/p' | grep -A 1 "$current" | grep -v "$current" | cut -d"|" -f2 | tr "~" " ") # next page file path
-    nextChapter="$(cat sections.list | sed -n '/^3.*/p' | grep -A 1 "$current" | grep -v "$current" | cut -d"|" -f3 | sed 's/\.\///')" # next page header
+    nextCname=$(cat sections.list | sed -n '/^3.*/p' | grep -A 1 "$current" | tail -n1 | cut -d"|" -f2 | tr "~" " ")
+    nextChapter="$(cat sections.list | sed -n '/^3.*/p' | grep -A 1 "$current" | tail -n1 | cut -d"|" -f3 | sed 's/\.\///')"
+    prevCname=$(cat sections.list | sed -n '/^3.*/p' | grep -B 1 "$current" | head -n1 | cut -d"|" -f2 | tr "~" " ")
+    prevChapter="$(cat sections.list | sed -n '/^3.*/p' | grep -B 1 "$current" | head -n1 | cut -d"|" -f3 | sed 's/\.\///')"
 
     level=$(echo "${current}" | awk -F "/" '{print NF-1}') # distance of current file from repository root directory
     base=$(printf %$(echo $level)s |tr " " "~" | sed 's/~/\.\.\//g') # number of ../ string based on distance
+
+    if ! [[ -z $prevCname ]]; then
+        sed -i "/# Quick Access/a \\\n#### &#8647; Previous Chapter\n\n* [$prevCname](./$base$prevChapter)" $current
+    fi
 
     if ! [[ -z $nextCname ]]; then
         echo "" >> $current
@@ -261,11 +285,17 @@ for pair in $(cat sections.list | sed -n '/^2.*/p')
 do
     current=$(echo $pair | cut -d"|" -f3 | sed 's/\.\///') # current file in iteration
     occurance=$(echo $pair | cut -d"|" -f1) # distance of current file from repository root directory
-    nextSname=$(cat sections.list | sed -n '/^2.*/p' | grep -A 1 "$current" | grep -v "$current" | cut -d"|" -f2 | tr "~" " ") # next page file path
-    nextSection="$(cat sections.list | sed -n '/^2.*/p' | grep -A 1 "$current" | grep -v "$current" | cut -d"|" -f3 | sed 's/\.\///')" # next page header
+    nextSname=$(cat sections.list | sed -n '/^2.*/p' | grep -A 1 "$current" | tail -n1 | cut -d"|" -f2 | tr "~" " ")
+    nextSection="$(cat sections.list | sed -n '/^2.*/p' | grep -A 1 "$current" | tail -n1 | cut -d"|" -f3 | sed 's/\.\///')"
+    prevSname=$(cat sections.list | sed -n '/^2.*/p' | grep -B 1 "$current" | head -n1 | cut -d"|" -f2 | tr "~" " ")
+    prevSection="$(cat sections.list | sed -n '/^2.*/p' | grep -B 1 "$current" | head -n1 | cut -d"|" -f3 | sed 's/\.\///')"
 
     level=$(echo "${current}" | awk -F "/" '{print NF-1}') # distance of current file from repository root directory
     base=$(printf %$(echo $level)s |tr " " "~" | sed 's/~/\.\.\//g') # number of ../ string based on distance
+
+    if ! [[ -z $prevSname ]]; then
+        sed -i "/# Quick Access/a \\\n#### &#11057; Previous Section\n\n* [$prevSname](./$base$prevSection)" $current
+    fi
 
     if ! [[ -z $nextSname ]]; then
         echo "" >> $current
@@ -275,14 +305,35 @@ do
     fi
 done
 
+echo "numbering markdown headers"
+sed -n "/\.md)$/p" List.md | sed -r 's/.*\[(.*)\. .*\]\((.*)\).*/\1 \2/' > head.list
+markdown_list=$(sed -n "/\.md)$/p" List.md | sed -r 's/.*\((.*)\).*/\1/')
+for mfile in $markdown_list; do
+    numbering=$(awk -v filename="$mfile" '$2 == filename {print $1}' head.list)
+    sed -i -r "1s/# [0-9. ]*(.*)/# $numbering \1/" $mfile
+done
+
+echo "creating single HTML page"
+echo '<head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>' > markdown.html
+cat README.md >> markdown.html
+sed -i 's/  $/<\/br>/' markdown.html
+cat List.md | sed -r -n 's/.*\[(.*)\].*$/\1/p' > tboc.list
+sed -i -r 's/([0-9.]*)\. (.*)$/\* <a href="#\1">\1 \2<\/a>/' tboc.list
+sed -i 'N;/# Table of Content/ r tboc.list' markdown.html
+sed -i -e '/\.\/Brief.md/d' -e '/\.\/List.md/d' markdown.html
+./markdown2html.sh -e markdown.html
+files=$(sed -r -n 's/.*\[.*]\((.*)\)$/\1/p' List.md | sort | xargs)
+./markdown2html.sh -a markdown.html $files
+sed -i -r 's/href=".*">([0-9.]*)\. (.*)<\/a>/href="#\1">\1 \2<\/a>/' markdown.html
+
 # clean up temp file
+find . -name practice | xargs rm -f
 rm -f pair.list
 rm -f files.list
 rm -f file.temp
 rm -f readme.list
 rm -f sections.list
+rm -f tboc.list
+rm -r head.list
 if $VERBOSE; then echo "junk files removed"; fi
 echo "repository refreshed"
-
-echo "creating HTML page"
-./markdown2html.sh
