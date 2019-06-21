@@ -23,7 +23,10 @@ EXECUTABLE_MODE=false
 PRIMARY_EXTENSION=js
 
 # additional extensions coming beside source codes. eg: md, txt, pdf, etc.
-ADDITIONAL_EXTENSIONS="md comment.txt input.txt output.txt md5sum.txt title.txt"
+ADDITIONAL_EXTENSIONS="md reference.txt comment.txt input.txt output.txt md5sum.txt title.txt"
+
+# whether comments must have a reference for validity or not
+REFERENCE_VALIDITY=false
 
 # maximum directory level, almost always 3 levels are meaningful
 MAX_DIR_LEVEL=3

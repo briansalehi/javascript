@@ -12,6 +12,8 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+find . -name "practice*" | xargs rm -f
+
 # organize repository
 ./organize.sh $options
 
@@ -190,9 +192,13 @@ do
         sourcePath=$(echo $markdownSrc | sed "s/\.md$/\.$PRIMARY_EXTENSION/")
     fi
     commentSrc=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.comment\.txt/" | tr "~" " ") # comment source path
+    verification=$(echo $sourcePath | sed "s/\.$PRIMARY_EXTENSION$/\.reference\.txt/" | tr "~" " ") # comment source path
 
-    if [[ -f $commentSrc ]] && [[ -f $markdownSrc ]]; then
+    if [[ -f $commentSrc ]] && [[ -f $markdownSrc ]] && $REFERENCE_VALIDITY && [[ -f $verification ]]; then
         echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
+        cat $commentSrc >> $markdownSrc
+    elif [[ -f $commentSrc ]] && [[ -f $markdownSrc ]]; then
+        echo -e "\n## Comments *[not verified]*\n" >> $markdownSrc # append comments to md file
         cat $commentSrc >> $markdownSrc
     else
         echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
