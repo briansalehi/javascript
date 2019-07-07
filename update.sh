@@ -198,12 +198,17 @@ do
         echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
         cat $commentSrc >> $markdownSrc
     elif [[ -f $commentSrc ]] && [[ -f $markdownSrc ]]; then
-        echo -e "\n## Comments *[not verified]*\n" >> $markdownSrc # append comments to md file
+        if $REFERENCE_VALIDITY; then
+            echo -e "\n## Comments *[not verified]*\n" >> $markdownSrc # append comments to md file
+        else
+            echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
+        fi
         cat $commentSrc >> $markdownSrc
     else
         echo -e "\n## Comments\n" >> $markdownSrc # append comments to md file
         echo "no comments" >> $markdownSrc
     fi
+    verification=""
 done
 fi
 
